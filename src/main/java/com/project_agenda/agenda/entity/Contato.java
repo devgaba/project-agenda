@@ -2,18 +2,23 @@ package com.project_agenda.agenda.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-
+import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
 @Table(name = "TB_CONTATOS")
+@Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Contato implements Serializable {
 
+    @Serial
     private static final long SerialVersionUID = 1L;
 
     @Id
@@ -32,6 +37,7 @@ public class Contato implements Serializable {
 
     @Column(name = "DATANASC_CONTATO")
     private LocalDate dataNascimento;
+
 
     //Getters e Setters
     public String getNome(){ return nome;}
