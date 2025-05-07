@@ -7,21 +7,29 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
-@RequestMapping("/contato")
+@RequestMapping("/contatos")
 public class ContatoController {
 
     @Autowired
     private ContatoService contatoService;
 
-    @GetMapping
+    @GetMapping("/exibir-contatos")
     public List<Contato> exibirContatos(){
         return contatoService.exibirContatos();
     }
 
-    /*@PostMapping
+
+    @PostMapping("/criar-contato")
     public Contato criarContato(@RequestBody Contato contato){
-        return contatoService.criarContato();
-    }*/
+        return contatoService.criarContato(contato);
+    }
+
+
+    @DeleteMapping("/excluir-contato/{id}")
+    public void excluirContato(@PathVariable UUID id){
+        contatoService.excluirContato(id);
+    }
 }

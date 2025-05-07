@@ -40,7 +40,7 @@ public class Contato implements Serializable {
 
 
     //Getters e Setters
-    public String getNome(){ return nome;}
+    /*public String getNome(){ return nome;}
 
     public void setNome(String nome){this.nome = nome;}
 
@@ -55,5 +55,5 @@ public class Contato implements Serializable {
     public LocalDate getDataNascimento(){return dataNascimento;}
 
     public void setDataNascimento(LocalDate dataNascimento){this.dataNascimento = dataNascimento;}
-}
+*/}
 

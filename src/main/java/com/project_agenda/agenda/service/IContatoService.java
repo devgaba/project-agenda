@@ -1,17 +1,17 @@
 package com.project_agenda.agenda.service;
 
-import com.project_agenda.agenda.dto.ContatoDTO;
 import com.project_agenda.agenda.entity.Contato;
-import lombok.Data;
+
 
 import java.util.List;
-@Data
+import java.util.UUID;
+
 public interface IContatoService {
 
 
     public List<Contato> exibirContatos();
 
-    public Contato criarContato(ContatoDTO contatoDTO);
+    public Contato criarContato(Contato contato);
 
-    Contato criarContato(Contato contato);
+    public void excluirContato(UUID id);
 }
