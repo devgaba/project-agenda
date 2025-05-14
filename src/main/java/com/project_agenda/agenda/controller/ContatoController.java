@@ -2,6 +2,7 @@ package com.project_agenda.agenda.controller;
 
 
 import com.project_agenda.agenda.entity.Contato;
+import com.project_agenda.agenda.repository.ContatoRepository;
 import com.project_agenda.agenda.service.impl.ContatoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -27,6 +28,11 @@ public class ContatoController {
         return contatoService.criarContato(contato);
     }
 
+
+    @PutMapping("/atualizar-contato/{id}")
+    public Contato atualizarContato(@PathVariable UUID id, @RequestBody Contato contato) {
+        return contatoService.atualizarContato(id, contato);
+    }
 
     @DeleteMapping("/excluir-contato/{id}")
     public void excluirContato(@PathVariable UUID id){

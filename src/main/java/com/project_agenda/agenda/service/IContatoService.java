@@ -9,9 +9,13 @@ import java.util.UUID;
 public interface IContatoService {
 
 
-    public List<Contato> exibirContatos();
+    List<Contato> exibirContatos();
 
-    public Contato criarContato(Contato contato);
+    Contato criarContato(Contato contato);
 
-    public void excluirContato(UUID id);
+    Contato atualizarContato(UUID id, Contato contato);
+
+    void excluirContato(UUID id);
+
+
 }
