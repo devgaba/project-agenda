@@ -1,17 +1,23 @@
 package com.project_agenda.agenda.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 @Entity
 @Table(name = "TB_ENDERECO")
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Endereco implements Serializable {
 
+    @Serial
     private static final long SerialVersionUID = 1L;
 
 
@@ -30,8 +36,12 @@ public class Endereco implements Serializable {
     @Column(name = "CEP_ENDERECO")
     private String cep;
 
+    @ManyToOne
+    @JoinColumn(name = "ID_CONTATO")
+    @JsonBackReference
+    private Contato contato;
 
-    //Getters e Setters
+
 
     public String getNomeRua(){return nomeRua;}
 
@@ -44,4 +54,9 @@ public class Endereco implements Serializable {
     public String getCep(){return cep;}
 
     public void setCep(String cep){this.cep = cep;}
+
+    public Contato getContato() {return contato;}
+
+    public void setContato(Contato contato) {this.contato = contato;}
+
 }
