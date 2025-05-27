@@ -12,6 +12,7 @@ import java.io.Serializable;
 
 @Entity
 @Table(name = "TB_ENDERECO")
+@Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -40,23 +41,4 @@ public class Endereco implements Serializable {
     @JoinColumn(name = "ID_CONTATO")
     @JsonBackReference
     private Contato contato;
-
-
-
-    public String getNomeRua(){return nomeRua;}
-
-    public void setNomeRua(String nomeRua){this.nomeRua=nomeRua;}
-
-    public Long getNumeroRua(){return numeroRua;}
-
-    public void setNumeroRua(Long numeroRua){this.numeroRua = numeroRua;}
-
-    public String getCep(){return cep;}
-
-    public void setCep(String cep){this.cep = cep;}
-
-    public Contato getContato() {return contato;}
-
-    public void setContato(Contato contato) {this.contato = contato;}
-
 }

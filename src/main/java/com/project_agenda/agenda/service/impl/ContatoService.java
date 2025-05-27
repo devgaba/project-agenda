@@ -1,5 +1,6 @@
 package com.project_agenda.agenda.service.impl;
 
+import com.project_agenda.agenda.dto.ContatoDTO;
 import com.project_agenda.agenda.entity.Contato;
 import com.project_agenda.agenda.entity.Endereco;
 import com.project_agenda.agenda.repository.ContatoRepository;
@@ -33,7 +34,6 @@ public class ContatoService implements IContatoService {
 
     @Override
     public Contato criarContato(Contato contato) {
-
         return contatoRepository.save(contato);
     }
 
