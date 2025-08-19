@@ -1,6 +1,7 @@
 package com.project_agenda.agenda.dto;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.project_agenda.agenda.entity.Endereco;
 import lombok.Builder;
 import lombok.Data;
@@ -20,6 +21,7 @@ public class ContatoDTO {
 
     private String telefone;
 
+    @JsonFormat(pattern = "dd/MM/yyyy")
     private LocalDate dataNascimento;
 
     private List<EnderecoDTO> enderecoLista;

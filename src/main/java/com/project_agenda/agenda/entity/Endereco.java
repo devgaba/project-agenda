@@ -3,6 +3,7 @@ package com.project_agenda.agenda.entity;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -34,7 +35,7 @@ public class Endereco implements Serializable {
     private String nomeRua;
 
     @Column(name = "NUMERO_RUA_ENDERECO")
-    @NotBlank
+    @NotNull
     private Long numeroRua;
 
     @Column(name = "CEP_ENDERECO")
