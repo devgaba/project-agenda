@@ -2,6 +2,8 @@ package com.project_agenda.agenda.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -27,14 +29,16 @@ public class Endereco implements Serializable {
     @Column(name = "ID_ENDERECO")
     private Long id;
 
-
     @Column(name = "NOME_RUA")
+    @NotBlank
     private String nomeRua;
 
     @Column(name = "NUMERO_RUA_ENDERECO")
+    @NotBlank
     private Long numeroRua;
 
     @Column(name = "CEP_ENDERECO")
+    @Pattern(regexp = "\\d{5}-\\d{3}", message = "CEP inválido. Use o formato XXXXX-XXX")
     private String cep;
 
     @ManyToOne
