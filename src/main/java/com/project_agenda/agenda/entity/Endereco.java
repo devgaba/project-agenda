@@ -31,15 +31,12 @@ public class Endereco implements Serializable {
     private Long id;
 
     @Column(name = "NOME_RUA")
-    @NotBlank
     private String nomeRua;
 
     @Column(name = "NUMERO_RUA_ENDERECO")
-    @NotNull
     private Long numeroRua;
 
     @Column(name = "CEP_ENDERECO")
-    @Pattern(regexp = "\\d{5}-\\d{3}", message = "CEP inválido. Use o formato XXXXX-XXX")
     private String cep;
 
     @ManyToOne

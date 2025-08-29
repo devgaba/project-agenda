@@ -11,6 +11,7 @@ import com.project_agenda.agenda.repository.EnderecoRepository;
 import com.project_agenda.agenda.service.IContatoService;
 import com.project_agenda.agenda.service.impl.ContatoService;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,7 +36,7 @@ public class ContatoController {
     }
 
     @PostMapping("/criar-contato")
-    public ResponseEntity<Contato> criarContato(@RequestBody ContatoDTO contatoDTO){
+    public ResponseEntity<Contato> criarContato(@Valid @RequestBody ContatoDTO contatoDTO){
 
         Contato contatoCriado = contatoService.criarContato(contatoDTO);
 
@@ -44,7 +45,7 @@ public class ContatoController {
 
     @PutMapping("/atualizar-contato/{id}")
     public ResponseEntity<ContatoDTO> atualizarContato(@PathVariable UUID id,
-                                                    @RequestBody ContatoDTO contatoDTO){
+                                                       @Valid @RequestBody ContatoDTO contatoDTO){
 
         Contato contatoSalvo = contatoService.atualizarContato(id, contatoDTO);
         contatoRepository.save(contatoSalvo);
@@ -53,7 +54,7 @@ public class ContatoController {
 
     @PatchMapping("/atualizar-info-contato/{id}")
     public ResponseEntity<Contato> atualizarInfoContato(@PathVariable UUID id,
-                                                        @RequestBody ContatoDTO contatoDTO){
+                                                        @Valid @RequestBody ContatoDTO contatoDTO){
 
         Contato contatoSalvo = contatoService.atualizarInfoContato(id, contatoDTO).getBody();
 
