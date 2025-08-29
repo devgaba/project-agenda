@@ -1,10 +1,13 @@
 package com.project_agenda.agenda.repository;
 
-
-import com.project_agenda.agenda.model.Pessoa;
+import com.project_agenda.agenda.entity.Endereco;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.UUID;
+
 @Repository
-public interface PessoaRepository extends JpaRepository<Pessoa, Long> {
+public interface EnderecoRepository extends JpaRepository<Endereco, UUID> {
+
+
 }
