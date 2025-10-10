@@ -1,15 +1,12 @@
 package com.project_agenda.agenda.dto;
 
-
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Email;
-
 import java.time.LocalDate;
 import java.util.List;
 
@@ -17,26 +14,23 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ContatoDTO {
+public class ContatoPatchDTO {
 
-    @NotBlank(message = "O campo referente ao nome não pode ser vazio.")
     private String nome;
 
-    @NotBlank
+
     @Email(message = "E-mail inválido")
     @Pattern(regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$",
             message = "O e-mail deve ser válido.")
     private String email;
 
-    @NotBlank
+
     @Pattern(regexp = "\\(\\d{2}\\) \\d{4,5}-\\d{4}", message = "Formato de telefone inválido")
     private String telefone;
 
-    @NotNull
     @JsonFormat(pattern = "dd/MM/yyyy")
     private String dataNascimento;
 
-    @NotNull
     @Size(min = 1, message = "O contato deve ter pelo menos um endereço.")
     private List<EnderecoDTO> enderecoLista;
 

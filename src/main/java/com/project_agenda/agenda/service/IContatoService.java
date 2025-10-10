@@ -2,8 +2,8 @@ package com.project_agenda.agenda.service;
 
 
 import com.project_agenda.agenda.dto.ContatoDTO;
+import com.project_agenda.agenda.dto.ContatoPatchDTO;
 import com.project_agenda.agenda.entity.Contato;
-import com.project_agenda.agenda.entity.Endereco;
 import org.springframework.http.ResponseEntity;
 
 
@@ -17,9 +17,9 @@ public interface IContatoService {
 
     Contato criarContato(ContatoDTO contatoDTO);
 
-    Contato atualizarContato(UUID id, ContatoDTO contatoDTO);
+    Contato atualizarContato(UUID id, ContatoPatchDTO contatoPatchDTO);
 
-    void excluirContato(UUID id);
+    Boolean excluirContato(UUID id);
 
-    ResponseEntity<Contato> atualizarInfoContato(UUID id, ContatoDTO contatoDTO);
+    Contato atualizarInfoContato(UUID id, ContatoPatchDTO contatoPatchDTO);
 }

@@ -44,6 +44,7 @@ public class Contato implements Serializable {
     private String telefone;
 
     @Column(name = "DATANASC_CONTATO")
+    @PastOrPresent(message="A data de nascimento não pode ser no futuro.")
     private LocalDate dataNascimento;
 
     @OneToMany(mappedBy = "contato", cascade = CascadeType.ALL, orphanRemoval = true)
