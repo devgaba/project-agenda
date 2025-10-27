@@ -33,7 +33,7 @@ public class ContatoDTO {
     private String telefone;
 
     @NotNull
-    @JsonFormat(pattern = "dd/MM/yyyy")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     private String dataNascimento;
 
     @NotNull

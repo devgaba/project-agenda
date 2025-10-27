@@ -22,9 +22,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @RestController
 @RequestMapping("/contatos")
@@ -42,14 +40,18 @@ public class ContatoController {
             @ApiResponse(responseCode = "404", description = "Não existem contatos")
     })
     @GetMapping("/exibir-contatos")
-    public ResponseEntity<List<Contato>> exibirContatos(){
+    public ResponseEntity<Map<String, Object>> exibirContatos(){
 
         List<Contato> contatos = contatoService.exibirContatos();
+        Map<String, Object> resposta = new HashMap<>();
         if(contatos == null){
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            resposta.put("Mensagem", "Não Há Informações sobre contatos!");
+            return new ResponseEntity<>(resposta, HttpStatus.NOT_FOUND);
         }
-
-        return new ResponseEntity<>(contatos, HttpStatus.OK);
+        else{
+            resposta.put("Lista de Contatos", contatos);
+        }
+        return new ResponseEntity<>(resposta, HttpStatus.OK);
     }
 
     @Operation(description = "Cria um contato e cadastro no banco de dados")
@@ -58,17 +60,19 @@ public class ContatoController {
             @ApiResponse(responseCode = "302", description = "O contato não é criado, pois já existe")
     })
     @PostMapping("/criar-contato")
-    public ResponseEntity<String> criarContato(@Valid @RequestBody ContatoDTO contatoDTO){
+    public ResponseEntity<Map<String, Object>> criarContato(@Valid @RequestBody ContatoDTO contatoDTO){
 
         Contato contatoCriado = contatoService.criarContato(contatoDTO);
-
+        Map<String, Object> resposta = new HashMap<>();
         if(contatoCriado == null){
-            return new ResponseEntity<String>
-                    ("Contato existente! Verifique as informações e tente novamente",
-                    HttpStatus.FOUND);
+            resposta.put("Mensagem", "Contato existente! Verifique as informações e tente novamente");
+            return new ResponseEntity<>(resposta, HttpStatus.FOUND);
         }
-
-        return new ResponseEntity<>("Contato criado com sucesso!", HttpStatus.CREATED);
+        else{
+            resposta.put("mensagem", "Contato criado com sucesso!");
+            resposta.put("dados", contatoCriado);
+        }
+        return new ResponseEntity<>(resposta, HttpStatus.CREATED);
     }
 
     @Operation(description = "Atualiza um contato baseado no ID fornecido na URL.")
@@ -77,18 +81,21 @@ public class ContatoController {
             @ApiResponse(responseCode = "404", description = "Retorna erro ao tentar atualizar o contato.")
     })
     @PutMapping("/atualizar-contato/{id}")
-    public ResponseEntity<String> atualizarContato(@PathVariable UUID id,
+    public ResponseEntity<Map<String, Object>> atualizarContato(@PathVariable UUID id,
                                                        @Valid @RequestBody ContatoPatchDTO contatoPatchDTO){
 
-
         Contato contatoSalvo = contatoService.atualizarContato(id, contatoPatchDTO);
+        Map<String, Object> resposta = new HashMap<>();
         if(contatoSalvo == null){
-            return new ResponseEntity<String>
-                    ("Contato inexistente! Verifique o ID digitado!",
-                            HttpStatus.NOT_FOUND);
+            resposta.put("Mensagem", "Contato Inexistente! Verifique o ID digitado!");
+            return new ResponseEntity<>(resposta, HttpStatus.NOT_FOUND);
+        }
+        else{
+            resposta.put("Mensagem", "Contato atualizado com sucesso!");
+            resposta.put("Contato Atualizado", contatoSalvo);
         }
         contatoRepository.save(contatoSalvo);
-        return new ResponseEntity<String> ("Contato atualizado com sucesso!", HttpStatus.OK);
+        return new ResponseEntity<> (resposta, HttpStatus.OK);
     }
     @Operation(description = "Atualiza informações específicas de um contato")
     @ApiResponses(value = {
@@ -96,16 +103,20 @@ public class ContatoController {
             @ApiResponse(responseCode = "404", description = "Retorna o erro específico ao tentar atualizar a informação desejada.")
     })
     @PatchMapping("/atualizar-info-contato/{id}")
-    public ResponseEntity<String> atualizarInfoContato(@PathVariable UUID id,
+    public ResponseEntity<Map<String, Object>> atualizarInfoContato(@PathVariable UUID id,
                                                         @Valid @RequestBody ContatoPatchDTO contatoPatchDTO){
 
         Contato contatoSalvo = contatoService.atualizarInfoContato(id, contatoPatchDTO);
+        Map<String, Object> resposta = new HashMap<>();
         if(contatoSalvo == null){
-            return new ResponseEntity<String>
-                    ("Contato inexistente! Verifique o ID digitado!",
-                            HttpStatus.NOT_FOUND);
+            resposta.put("Mensagem", "Contato Inexistente");
+            return new ResponseEntity<>(resposta, HttpStatus.NOT_FOUND);
         }
-        return new ResponseEntity<String>("Informações atualizadas com sucesso", HttpStatus.OK);
+        else{
+            resposta.put("Mensagem", "Informações atualizadas com sucesso");
+            resposta.put("Contato Atualizado", contatoSalvo);
+        }
+        return new ResponseEntity<>(resposta, HttpStatus.OK);
     }
     @Operation(description = "Remove um contato do banco de dados, baseado no ID fornecido na URL.")
     @ApiResponses(value = {
@@ -113,13 +124,22 @@ public class ContatoController {
             @ApiResponse(responseCode = "404", description = "Retorna erro ao tentar remover o contato da lista.")
     })
     @DeleteMapping("/excluir-contato/{id}")
-    public ResponseEntity<String> excluirContato(@PathVariable UUID id){
+    public ResponseEntity<Map<String, Object>> excluirContato(@PathVariable UUID id){
 
         boolean contatoExcluido = contatoService.excluirContato(id);
+        List<Contato> contatos = contatoRepository.findAll();
+
+        Map<String, Object> resposta = new HashMap<>();
+
         if(!contatoExcluido){
-            return new ResponseEntity<>("Contato não encontrado", HttpStatus.NOT_FOUND);
+            resposta.put("Mensagem", "Contato não encontrado");
+            return new ResponseEntity<>(resposta, HttpStatus.NOT_FOUND);
         }
-        return new ResponseEntity<>("Contato excluído com sucesso", HttpStatus.OK);
+        else{
+            resposta.put("Mensagem", "Contato excluído com sucesso");
+            resposta.put("Lista de Contatos Atualizada",contatos);
+        }
+        return new ResponseEntity<>(resposta, HttpStatus.OK);
     }
 }
 

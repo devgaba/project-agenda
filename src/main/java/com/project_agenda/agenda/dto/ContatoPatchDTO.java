@@ -28,7 +28,7 @@ public class ContatoPatchDTO {
     @Pattern(regexp = "\\(\\d{2}\\) \\d{4,5}-\\d{4}", message = "Formato de telefone inválido")
     private String telefone;
 
-    @JsonFormat(pattern = "dd/MM/yyyy")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     private String dataNascimento;
 
     @Size(min = 1, message = "O contato deve ter pelo menos um endereço.")
