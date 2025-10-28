@@ -2,11 +2,8 @@ package com.project_agenda.agenda.controller;
 
 import com.project_agenda.agenda.dto.ContatoDTO;
 import com.project_agenda.agenda.dto.ContatoPatchDTO;
-import com.project_agenda.agenda.dto.EnderecoDTO;
 import com.project_agenda.agenda.entity.Contato;
-import com.project_agenda.agenda.entity.Endereco;
 import com.project_agenda.agenda.repository.ContatoRepository;
-import com.project_agenda.agenda.repository.EnderecoRepository;
 import com.project_agenda.agenda.service.IContatoService;
 import com.project_agenda.agenda.service.impl.ContatoService;
 import io.swagger.v3.oas.annotations.Operation;

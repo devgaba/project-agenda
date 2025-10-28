@@ -8,9 +8,7 @@ import com.project_agenda.agenda.entity.Endereco;
 import com.project_agenda.agenda.repository.ContatoRepository;
 import com.project_agenda.agenda.repository.EnderecoRepository;
 import com.project_agenda.agenda.service.IContatoService;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
