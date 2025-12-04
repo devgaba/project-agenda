@@ -18,25 +18,23 @@ import java.util.List;
 @Setter
 public class ContatoDTO {
 
-    @NotBlank(message = "O campo referente ao nome não pode ser vazio.")
+    @NotBlank(message = "O campo 'nome' não deve estar vazio.")
     private String nome;
 
-    @NotBlank
-    @Email(message = "E-mail inválido")
+    @NotBlank(message = "O campo 'email' não deve estar vazio.")
+    @Email(message = "Formato de email inválido.")
     @Pattern(regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$",
             message = "O e-mail deve ser válido.")
     private String email;
 
-    @NotBlank
-    @Pattern(regexp = "\\(\\d{2}\\) \\d{4,5}-\\d{4}", message = "Formato de telefone inválido")
+    @NotBlank(message = "O campo 'telefone' não deve estar vazio.")
+    @Pattern(regexp = "^\\([1-9][1-9]\\)\\s9[0-9]{4}-[0-9]{4}$",
+            message = "Formato de telefone inválido.")
     private String telefone;
 
-    @NotNull
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
-    private String dataNascimento;
+    @JsonFormat(pattern = "dd/MM/yyyy")
+    private LocalDate dataNascimento;
 
-    @NotNull
-    @Size(min = 1, message = "O contato deve ter pelo menos um endereço.")
     private List<EnderecoDTO> enderecoLista;
 
 

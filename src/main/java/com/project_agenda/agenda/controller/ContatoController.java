@@ -1,24 +1,18 @@
 package com.project_agenda.agenda.controller;
 
 import com.project_agenda.agenda.dto.ContatoDTO;
-import com.project_agenda.agenda.dto.ContatoPatchDTO;
 import com.project_agenda.agenda.entity.Contato;
 import com.project_agenda.agenda.repository.ContatoRepository;
 import com.project_agenda.agenda.service.IContatoService;
-import com.project_agenda.agenda.service.impl.ContatoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @RestController
@@ -59,7 +53,7 @@ public class ContatoController {
     @PostMapping("/criar-contato")
     public ResponseEntity<Map<String, Object>> criarContato(@Valid @RequestBody ContatoDTO contatoDTO){
 
-        Contato contatoCriado = contatoService.criarContato(contatoDTO);
+        ContatoDTO contatoCriado = contatoService.criarContato(contatoDTO);
         Map<String, Object> resposta = new HashMap<>();
         if(contatoCriado == null){
             resposta.put("Mensagem", "Contato existente! Verifique as informações e tente novamente");
@@ -72,6 +66,7 @@ public class ContatoController {
         return new ResponseEntity<>(resposta, HttpStatus.CREATED);
     }
 
+    /*
     @Operation(description = "Atualiza um contato baseado no ID fornecido na URL.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Retorna o contato atualizado com sucesso."),
@@ -79,9 +74,9 @@ public class ContatoController {
     })
     @PutMapping("/atualizar-contato/{id}")
     public ResponseEntity<Map<String, Object>> atualizarContato(@PathVariable UUID id,
-                                                       @Valid @RequestBody ContatoPatchDTO contatoPatchDTO){
+                                                       @Valid @RequestBody ContatoDTO contatoDTO){
 
-        Contato contatoSalvo = contatoService.atualizarContato(id, contatoPatchDTO);
+        ContatoDTO contatoSalvo = contatoService.atualizarContato(id, contatoDTO);
         Map<String, Object> resposta = new HashMap<>();
         if(contatoSalvo == null){
             resposta.put("Mensagem", "Contato Inexistente! Verifique o ID digitado!");
@@ -94,6 +89,9 @@ public class ContatoController {
         contatoRepository.save(contatoSalvo);
         return new ResponseEntity<> (resposta, HttpStatus.OK);
     }
+    */
+
+
     @Operation(description = "Atualiza informações específicas de um contato")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Retorna o contato com as informações especificas atualizadas."),
@@ -101,9 +99,9 @@ public class ContatoController {
     })
     @PatchMapping("/atualizar-info-contato/{id}")
     public ResponseEntity<Map<String, Object>> atualizarInfoContato(@PathVariable UUID id,
-                                                        @Valid @RequestBody ContatoPatchDTO contatoPatchDTO){
+                                                        @Valid @RequestBody ContatoDTO contatoDTO){
 
-        Contato contatoSalvo = contatoService.atualizarInfoContato(id, contatoPatchDTO);
+        ContatoDTO contatoSalvo = contatoService.atualizarInfoContato(id, contatoDTO);
         Map<String, Object> resposta = new HashMap<>();
         if(contatoSalvo == null){
             resposta.put("Mensagem", "Contato Inexistente");
@@ -115,6 +113,8 @@ public class ContatoController {
         }
         return new ResponseEntity<>(resposta, HttpStatus.OK);
     }
+
+
     @Operation(description = "Remove um contato do banco de dados, baseado no ID fornecido na URL.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Retorna a lista de contatos atualizada e com o contato removido."),
