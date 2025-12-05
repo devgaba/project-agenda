@@ -17,5 +17,5 @@ public interface IContatoService {
 
     Boolean excluirContato(UUID id);
 
-    ContatoDTO atualizarInfoContato(UUID id, ContatoDTO contatoDTO);
+    ContatoDTO atualizarInfoContato(UUID id, ContatoDTO contatoDTO) throws Exception;
 }

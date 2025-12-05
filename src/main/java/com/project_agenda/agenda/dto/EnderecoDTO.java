@@ -1,5 +1,6 @@
 package com.project_agenda.agenda.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.project_agenda.agenda.entity.Contato;
 import lombok.*;
 
@@ -20,5 +21,6 @@ public class EnderecoDTO {
 
     private String cep;
 
+    @JsonIgnore
     private Contato contato;
 }

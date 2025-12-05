@@ -4,6 +4,7 @@ import com.project_agenda.agenda.dto.ContatoDTO;
 import com.project_agenda.agenda.dto.EnderecoDTO;
 import com.project_agenda.agenda.entity.Contato;
 import com.project_agenda.agenda.entity.Endereco;
+import com.project_agenda.agenda.exception.EmailExistenteException;
 import com.project_agenda.agenda.repository.ContatoRepository;
 import com.project_agenda.agenda.repository.EnderecoRepository;
 import com.project_agenda.agenda.service.IContatoService;
@@ -46,35 +47,38 @@ public class ContatoService implements IContatoService {
 
         if(email.isEmpty()){
 
-
-
+            List<Endereco> enderecos = new ArrayList<>();
+            List<EnderecoDTO> enderecosDtoVisualizar = new ArrayList<>();
             Contato contatoCriado = Contato.builder()
                     .nome(contatoDTO.getNome())
                     .email(contatoDTO.getEmail())
                     .telefone(contatoDTO.getTelefone())
                     .dataNascimento(contatoDTO.getDataNascimento())
-                    .enderecoLista(null)
+                    .enderecoLista(enderecos)
                     .build();
 
-            List<Endereco> enderecosAtualizados = contatoDTO.getEnderecoLista().stream().map(end ->
-                    Endereco.builder()
-                            .id(end.getId())
-                            .nomeRua(end.getNomeRua())
-                            .numeroRua(end.getNumeroRua())
-                            .cep(end.getCep())
-                            .build()).toList();
+            enderecos.addAll(contatoDTO.getEnderecoLista().stream().map(enderecoDTO -> {
+                return Endereco.builder()
+                        .nomeRua(enderecoDTO.getNomeRua())
+                        .numeroRua(enderecoDTO.getNumeroRua())
+                        .cep(enderecoDTO.getCep())
+                        .contato(contatoCriado)
+                        .build();
 
-            contatoCriado.setEnderecoLista(enderecosAtualizados);
+            }).toList());
 
             contatoRepository.save(contatoCriado);
 
+            for(Endereco end : enderecos){
+                EnderecoDTO addEnderecoDto = EnderecoDTO.builder()
+                        .id(end.getId())
+                        .nomeRua(end.getNomeRua())
+                        .numeroRua(end.getNumeroRua())
+                        .cep(end.getCep())
+                        .build();
+                enderecosDtoVisualizar.add(addEnderecoDto);
 
-            List<EnderecoDTO> enderecosDtoVisualizar = contatoCriado.getEnderecoLista().stream().map(
-                    endereco -> EnderecoDTO.builder()
-                            .nomeRua(endereco.getNomeRua())
-                            .numeroRua(endereco.getNumeroRua())
-                            .cep(endereco.getCep())
-                            .build()).toList();
+            }
 
             return ContatoDTO.builder()
                     .nome(contatoCriado.getNome())
@@ -99,37 +103,43 @@ public class ContatoService implements IContatoService {
     }
 
     @Override
-    public ContatoDTO atualizarInfoContato(UUID id, ContatoDTO contatoDTO) {
+    public ContatoDTO atualizarInfoContato(UUID id, ContatoDTO contatoDTO) throws Exception {
 
         boolean verificarExistenciaContato = contatoRepository.existsById(id);
-
 
         if(!verificarExistenciaContato){
             return null;
         }
         else{
             Contato contatoAtual = contatoRepository.getReferenceById(id);
+            Optional<Contato> verificar = contatoRepository.findByEmail(contatoDTO.getEmail());
 
-            copiarPropriedadesNaoNulas(contatoDTO, contatoAtual,"enderecoLista");
-            BeanCopyUtils.atualizarEnderecos(contatoAtual, contatoDTO.getEnderecoLista());
-            Contato contatoSalvo = contatoRepository.save(contatoAtual);
+            if(verificar.isPresent() && !verificar.get().getId().equals(id)){
+                throw new EmailExistenteException("Email já cadastrado");
+            }
+            else{
+                copiarPropriedadesNaoNulas(contatoDTO, contatoAtual,"enderecoLista");
+                BeanCopyUtils.atualizarEnderecos(contatoAtual, contatoDTO.getEnderecoLista());
+                Contato contatoSalvo = contatoRepository.save(contatoAtual);
 
-            List<EnderecoDTO> enderecos = new ArrayList<>();
-            contatoAtual.getEnderecoLista().forEach(e -> enderecos.add(
-                            EnderecoDTO.builder()
-                                    .id(e.getId())
-                                    .nomeRua(e.getNomeRua())
-                                    .numeroRua(e.getNumeroRua())
-                                    .cep(e.getCep())
-                                    .contato(contatoAtual)
-                                    .build()));
 
-            return ContatoDTO.builder()
-                    .nome(contatoAtual.getNome())
-                    .email(contatoAtual.getEmail())
-                    .telefone(contatoAtual.getTelefone())
-                    .dataNascimento(contatoAtual.getDataNascimento())
-                    .enderecoLista(enderecos).build();
+                List<EnderecoDTO> enderecos = new ArrayList<>();
+                contatoAtual.getEnderecoLista().forEach(e -> enderecos.add(
+                        EnderecoDTO.builder()
+                                .id(e.getId())
+                                .nomeRua(e.getNomeRua())
+                                .numeroRua(e.getNumeroRua())
+                                .cep(e.getCep())
+                                .contato(contatoAtual)
+                                .build()));
+
+                return ContatoDTO.builder()
+                        .nome(contatoAtual.getNome())
+                        .email(contatoAtual.getEmail())
+                        .telefone(contatoAtual.getTelefone())
+                        .dataNascimento(contatoAtual.getDataNascimento())
+                        .enderecoLista(enderecos).build();
+            }
         }
 
 

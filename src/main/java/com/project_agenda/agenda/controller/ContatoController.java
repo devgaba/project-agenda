@@ -2,8 +2,10 @@ package com.project_agenda.agenda.controller;
 
 import com.project_agenda.agenda.dto.ContatoDTO;
 import com.project_agenda.agenda.entity.Contato;
+import com.project_agenda.agenda.exception.EmailExistenteException;
 import com.project_agenda.agenda.repository.ContatoRepository;
 import com.project_agenda.agenda.service.IContatoService;
+import com.project_agenda.agenda.utils.BeanCopyUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -98,8 +100,8 @@ public class ContatoController {
             @ApiResponse(responseCode = "404", description = "Retorna o erro específico ao tentar atualizar a informação desejada.")
     })
     @PatchMapping("/atualizar-info-contato/{id}")
-    public ResponseEntity<Map<String, Object>> atualizarInfoContato(@PathVariable UUID id,
-                                                        @Valid @RequestBody ContatoDTO contatoDTO){
+    public ResponseEntity<Map<String, Object>> atualizarInfoContato(@Valid @PathVariable UUID id,
+                                                         @RequestBody ContatoDTO contatoDTO) throws Exception {
 
         ContatoDTO contatoSalvo = contatoService.atualizarInfoContato(id, contatoDTO);
         Map<String, Object> resposta = new HashMap<>();

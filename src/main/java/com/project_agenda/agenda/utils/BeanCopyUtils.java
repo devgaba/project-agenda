@@ -3,14 +3,19 @@ package com.project_agenda.agenda.utils;
 import com.project_agenda.agenda.dto.EnderecoDTO;
 import com.project_agenda.agenda.entity.Contato;
 import com.project_agenda.agenda.entity.Endereco;
+import com.project_agenda.agenda.repository.ContatoRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import java.beans.PropertyDescriptor;
 import java.util.*;
 
 public class BeanCopyUtils {
+
 
     public static void copiarPropriedadesNaoNulas(Object dtoInserido, Object entidadeSalva, String... ignorar){
         String[] propriedadesNulas = obterPropriedadesNulas(dtoInserido);
@@ -82,4 +87,6 @@ public class BeanCopyUtils {
         novoEnderecoDTO.setContato(contato);
         listaEnderecoContato.add(novo);
     }
+
+
 }
