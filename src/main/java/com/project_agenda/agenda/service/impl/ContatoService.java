@@ -34,7 +34,7 @@ public class ContatoService implements IContatoService {
         List<Contato> contatos = contatoRepository.findAll();
 
         if(!contatos.isEmpty()){
-            return contatoRepository.findAll();
+            return contatos;
         }
         return null;
     }

@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Email;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import javax.xml.transform.Source;
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -58,4 +59,5 @@ public class Contato implements Serializable {
     @JsonManagedReference
     @Schema(description = "Lista de endereços do contato", example = "")
     private List<Endereco> enderecoLista =  new ArrayList<>();
+
 }

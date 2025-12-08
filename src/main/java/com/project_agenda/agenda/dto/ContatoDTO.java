@@ -24,8 +24,8 @@ public class ContatoDTO {
 
     @NotBlank(message = "O campo 'email' não deve estar vazio.")
     @Email(message = "Formato de email inválido.")
-    @Pattern(regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$",
-            message = "O e-mail deve ser válido.")
+    /*@Pattern(regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$",
+            message = "O e-mail deve ser válido.")*/
     private String email;
 
     @NotBlank(message = "O campo 'telefone' não deve estar vazio.")
