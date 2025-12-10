@@ -3,12 +3,14 @@ package com.project_agenda.agenda.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import jakarta.persistence.Id;
 import jakarta.validation.constraints.*;
 import lombok.*;
 import org.hibernate.validator.constraints.Email;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @Builder
@@ -18,6 +20,9 @@ import java.util.List;
 @Setter
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ContatoDTO {
+
+    @Id
+    private UUID id;
 
     @NotBlank(message = "O campo 'nome' não deve estar vazio.")
     private String nome;

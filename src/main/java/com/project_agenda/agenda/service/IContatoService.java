@@ -11,7 +11,7 @@ import java.util.UUID;
 public interface IContatoService {
 
 
-    List<Contato> exibirContatos();
+    List<ContatoDTO> exibirContatos();
 
     ContatoDTO criarContato(ContatoDTO contatoDTO);
 

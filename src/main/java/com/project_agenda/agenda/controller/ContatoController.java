@@ -5,7 +5,6 @@ import com.project_agenda.agenda.entity.Contato;
 import com.project_agenda.agenda.exception.EmailExistenteException;
 import com.project_agenda.agenda.repository.ContatoRepository;
 import com.project_agenda.agenda.service.IContatoService;
-import com.project_agenda.agenda.utils.BeanCopyUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -30,43 +29,23 @@ public class ContatoController {
 
     @Operation(description = "Busca e exibe todos os contatos existentes")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Retorna todos os contatos existentes"),
-            @ApiResponse(responseCode = "404", description = "Não existem contatos")
+            @ApiResponse(responseCode = "200", description = "Retorna a lista de contatos, esteja ela, vazia ou não"),
     })
     @GetMapping("/exibir-contatos")
-    public ResponseEntity<Map<String, Object>> exibirContatos(){
-
-        List<Contato> contatos = contatoService.exibirContatos();
-        Map<String, Object> resposta = new HashMap<>();
-        if(contatos == null){
-            resposta.put("Mensagem", "Não Há Informações sobre contatos!");
-            return new ResponseEntity<>(resposta, HttpStatus.NOT_FOUND);
-        }
-        else{
-            resposta.put("Lista de Contatos", contatos);
-        }
-        return new ResponseEntity<>(resposta, HttpStatus.OK);
+    public ResponseEntity<List<ContatoDTO>> exibirContatos(){
+        List<ContatoDTO> contatos = contatoService.exibirContatos();
+        return new ResponseEntity<>(contatos, HttpStatus.OK);
     }
 
     @Operation(description = "Cria um contato e cadastro no banco de dados")
     @ApiResponses( value = {
             @ApiResponse(responseCode = "201", description = "Retorna o contato criado com sucesso"),
-            @ApiResponse(responseCode = "302", description = "O contato não é criado, pois já existe")
+            @ApiResponse(responseCode = "409", description = "O contato não é criado, pois já existe")
     })
     @PostMapping("/criar-contato")
-    public ResponseEntity<Map<String, Object>> criarContato(@Valid @RequestBody ContatoDTO contatoDTO){
-
-        ContatoDTO contatoCriado = contatoService.criarContato(contatoDTO);
-        Map<String, Object> resposta = new HashMap<>();
-        if(contatoCriado == null){
-            resposta.put("Mensagem", "Contato existente! Verifique as informações e tente novamente");
-            return new ResponseEntity<>(resposta, HttpStatus.FOUND);
-        }
-        else{
-            resposta.put("mensagem", "Contato criado com sucesso!");
-            resposta.put("dados", contatoCriado);
-        }
-        return new ResponseEntity<>(resposta, HttpStatus.CREATED);
+    public ResponseEntity<?> criarContato(@Valid @RequestBody ContatoDTO contatoDTO){
+            ContatoDTO contatoCriado = contatoService.criarContato(contatoDTO);
+            return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     /*
@@ -101,45 +80,29 @@ public class ContatoController {
             @ApiResponse(responseCode = "404", description = "Retorna o erro específico ao tentar atualizar a informação desejada.")
     })
     @PatchMapping("/atualizar-info-contato/{id}")
-    public ResponseEntity<Map<String, Object>> atualizarInfoContato(@Valid @PathVariable UUID id,
+    public ResponseEntity<?> atualizarInfoContato(@Valid @PathVariable UUID id,
                                                          @RequestBody ContatoDTO contatoDTO) throws Exception {
-
         ContatoDTO contatoSalvo = contatoService.atualizarInfoContato(id, contatoDTO);
-        Map<String, Object> resposta = new HashMap<>();
-        if(contatoSalvo == null){
-            resposta.put("Mensagem", "Contato Inexistente");
-            return new ResponseEntity<>(resposta, HttpStatus.NOT_FOUND);
-        }
-        else{
-            resposta.put("Mensagem", "Informações atualizadas com sucesso");
-            resposta.put("Contato Atualizado", contatoSalvo);
-        }
-        return new ResponseEntity<>(resposta, HttpStatus.OK);
+        return new ResponseEntity<>(contatoSalvo, HttpStatus.OK);
     }
 
 
     @Operation(description = "Remove um contato do banco de dados, baseado no ID fornecido na URL.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Retorna a lista de contatos atualizada e com o contato removido."),
-            @ApiResponse(responseCode = "404", description = "Retorna erro ao tentar remover o contato da lista.")
+            @ApiResponse(responseCode = "204", description = "A exclusão foi executado com sucesso."),
+            @ApiResponse(responseCode = "404", description = "O ID não foi localizado na lista.")
     })
     @DeleteMapping("/excluir-contato/{id}")
-    public ResponseEntity<Map<String, Object>> excluirContato(@PathVariable UUID id){
+    public ResponseEntity<?> excluirContato(@PathVariable UUID id){
 
         boolean contatoExcluido = contatoService.excluirContato(id);
-        List<Contato> contatos = contatoRepository.findAll();
-
-        Map<String, Object> resposta = new HashMap<>();
 
         if(!contatoExcluido){
-            resposta.put("Mensagem", "Contato não encontrado");
-            return new ResponseEntity<>(resposta, HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         else{
-            resposta.put("Mensagem", "Contato excluído com sucesso");
-            resposta.put("Lista de Contatos Atualizada",contatos);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
-        return new ResponseEntity<>(resposta, HttpStatus.OK);
     }
 }
 

@@ -1,6 +1,7 @@
 package com.project_agenda.agenda.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.project_agenda.agenda.entity.Contato;
 import lombok.*;
 
