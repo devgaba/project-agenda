@@ -81,8 +81,6 @@ public class ContatoService implements IContatoService {
     @Override
     public ContatoDTO atualizarInfoContato(UUID id, ContatoDTO contatoDTO) throws Exception {
 
-        boolean verificarExistenciaContato = contatoRepository.existsById(id);
-
         try{
             return atualizarContatoComDto(id,contatoDTO);
 
@@ -116,6 +114,7 @@ public class ContatoService implements IContatoService {
 
     private ContatoDTO atualizarContatoComDto(UUID id, ContatoDTO contatoDTO) throws IOException {
 
+
         Contato contatoExistente = contatoRepository.findById(id).orElseThrow(
                 () -> new RecursoNaoEncontradoException("O ID não foi encontrado ou não existe."));
 
@@ -123,13 +122,23 @@ public class ContatoService implements IContatoService {
         ObjectMapper mapeador = new ObjectMapper();
         mapeador.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         String dtoParaString = mapeador.writeValueAsString(contatoDTO);
-        Contato contatoMisturado = mapeador.readerForUpdating(contatoExistente)
-                .readValue(dtoParaString);
+        mapeador.readerForUpdating(contatoExistente).readValue(dtoParaString);
 
         Contato contatoAtualizado = contatoRepository.save(contatoExistente);
 
-        return ContatoDTO.builder().nome(contatoDTO.getNome())
-                .email(contatoDTO.getEmail()).telefone(contatoDTO.getTelefone())
-                .enderecoLista(contatoDTO.getEnderecoLista()).build();
+        ContatoDTO dtoVisualizacao = new ContatoDTO();
+        BeanUtils.copyProperties(contatoAtualizado, dtoVisualizacao);
+        return dtoVisualizacao;
+
+        /*
+        return ContatoDTO.builder().nome(contatoAtualizado.getNome())
+                .email(contatoAtualizado.getEmail()).telefone(contatoAtualizado.getTelefone())
+                .enderecoLista(contatoAtualizado.getEnderecoLista().stream().map(
+                        endereco -> EnderecoDTO.builder()
+                                .id(endereco.getId()).nomeRua(endereco.getNomeRua())
+                                .numeroRua(endereco.getNumeroRua()).cep(endereco.getCep())
+                                .build()).toList()).build();
+
+         */
     }
 }
