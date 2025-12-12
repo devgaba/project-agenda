@@ -1,6 +1,7 @@
 package com.project_agenda.agenda.service.impl;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project_agenda.agenda.dto.ContatoDTO;
 import com.project_agenda.agenda.dto.EnderecoDTO;
@@ -29,6 +30,7 @@ public class ContatoService implements IContatoService {
 
     @Autowired
     private EnderecoRepository enderecoRepository;
+
 
     @Override
     public List<ContatoDTO> exibirContatos() {
@@ -79,14 +81,20 @@ public class ContatoService implements IContatoService {
     }
 
     @Override
+    @Transactional
     public ContatoDTO atualizarInfoContato(UUID id, ContatoDTO contatoDTO) throws Exception {
 
         try{
-            return atualizarContatoComDto(id,contatoDTO);
-
+            for(EnderecoDTO end : contatoDTO.getEnderecoLista()){
+                atualizarEnderecoDoContato(id, end.getId(), end);
+            }
+            return atualizarContatoComDto(id, contatoDTO);
         }
         catch (RecursoNaoEncontradoException e){
             throw new RecursoNaoEncontradoException(e.getMessage());
+        }
+        catch (IOException e){
+            throw new RuntimeException("Falha ao processar dados de Contato.");
         }
     }
 
@@ -118,27 +126,85 @@ public class ContatoService implements IContatoService {
         Contato contatoExistente = contatoRepository.findById(id).orElseThrow(
                 () -> new RecursoNaoEncontradoException("O ID não foi encontrado ou não existe."));
 
+        // Instanciando o mapper
+        ObjectMapper mapper = new ObjectMapper();
 
-        ObjectMapper mapeador = new ObjectMapper();
-        mapeador.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        String dtoParaString = mapeador.writeValueAsString(contatoDTO);
-        mapeador.readerForUpdating(contatoExistente).readValue(dtoParaString);
+        // Instanciando um dto para receber os dados que serão serializados
+        ContatoDTO contTeste = new ContatoDTO();
+        BeanUtils.copyProperties(contatoDTO, contTeste, "enderecoLista");
 
-        Contato contatoAtualizado = contatoRepository.save(contatoExistente);
+        String jsonDTO = mapper.writeValueAsString(contTeste);
+        Contato contatoDesserializado = mapper.readerForUpdating(contatoExistente)
+                .readValue(jsonDTO, Contato.class);
 
-        ContatoDTO dtoVisualizacao = new ContatoDTO();
-        BeanUtils.copyProperties(contatoAtualizado, dtoVisualizacao);
-        return dtoVisualizacao;
+        contatoRepository.save(contatoDesserializado);
 
-        /*
-        return ContatoDTO.builder().nome(contatoAtualizado.getNome())
-                .email(contatoAtualizado.getEmail()).telefone(contatoAtualizado.getTelefone())
-                .enderecoLista(contatoAtualizado.getEnderecoLista().stream().map(
-                        endereco -> EnderecoDTO.builder()
-                                .id(endereco.getId()).nomeRua(endereco.getNomeRua())
-                                .numeroRua(endereco.getNumeroRua()).cep(endereco.getCep())
-                                .build()).toList()).build();
+        return ContatoDTO.builder().id(contatoExistente.getId())
+                .nome(contatoExistente.getNome())
+                .email(contatoExistente.getEmail())
+                .telefone(contatoExistente.getTelefone())
+                .dataNascimento(contatoExistente.getDataNascimento())
+                .enderecoLista(contatoExistente.getEnderecoLista().stream().map(
+                        e -> EnderecoDTO.builder()
+                                .id(e.getId())
+                                .nomeRua(e.getNomeRua())
+                                .numeroRua(e.getNumeroRua())
+                                .cep(e.getCep()).build()).toList()).build();
+    }
 
-         */
+    private void atualizarEnderecoDoContato(UUID id, Integer enderecoId, EnderecoDTO enderecoDTO) throws IOException{
+        Contato contatoExistente = contatoRepository.findById(id).orElseThrow(
+                () -> new RecursoNaoEncontradoException("Contato não encontrado."));
+
+
+        Endereco enderecoExistente = contatoExistente.getEnderecoLista().stream()
+                .filter( e -> e.getId().equals(enderecoId))
+                .findFirst()
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Endereço não encontrado."));
+
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        String jsonDTO = mapper.writeValueAsString(enderecoDTO);
+
+        Endereco enderecoAtualizado = mapper.readerForUpdating(enderecoExistente)
+                .readValue(jsonDTO, Endereco.class);
+
+        contatoRepository.save(contatoExistente);
+    }
+
+    private void excluirEnderecoDoContato(UUID id, Integer enderecoId, EnderecoDTO enderecoDTO){
+        Contato contatoExistente = contatoRepository.findById(id).orElseThrow(
+                () -> new RecursoNaoEncontradoException("O ID não foi encontrado ou não existe"));
+
+        if (verificarCamposEndereco(enderecoDTO)){
+            contatoExistente.getEnderecoLista().removeIf(e -> e.getId().equals(enderecoId));
+        }
+        else{
+            throw new RecursoNaoEncontradoException("ID do endereço inexistente.");
+        }
+        contatoRepository.save(contatoExistente);
+    }
+
+    private void adicionarEndereco(UUID id, EnderecoDTO enderecoDTO) throws JsonProcessingException {
+        Contato contatoExistente = contatoRepository.findById(id).orElseThrow(
+                () -> new RecursoNaoEncontradoException("O ID não foi encontrado ou não existe"));
+        Endereco enderecoCriado = new Endereco();
+
+        if(enderecoDTO.getId() == null){
+                enderecoCriado.setNomeRua(enderecoDTO.getNomeRua());
+                enderecoCriado.setNumeroRua(enderecoDTO.getNumeroRua());
+                enderecoCriado.setCep(enderecoDTO.getCep());
+                enderecoCriado.setContato(contatoExistente);
+        }
+    }
+
+    private boolean verificarCamposEndereco(EnderecoDTO enderecoDTO){
+        boolean idExistente = enderecoDTO.getId() != null;
+        boolean ruaInexistente = enderecoDTO.getNomeRua() == null || enderecoDTO.getNomeRua().trim().isEmpty();
+        boolean numeroInexistente = enderecoDTO.getNumeroRua() == null;
+        boolean cepInexistente = enderecoDTO.getCep() == null || enderecoDTO.getCep().trim().isEmpty();
+
+        return idExistente && ruaInexistente && numeroInexistente && cepInexistente;
     }
 }
