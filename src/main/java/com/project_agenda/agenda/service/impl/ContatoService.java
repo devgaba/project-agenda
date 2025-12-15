@@ -2,7 +2,10 @@ package com.project_agenda.agenda.service.impl;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.project_agenda.agenda.dto.ContatoDTO;
 import com.project_agenda.agenda.dto.EnderecoDTO;
 import com.project_agenda.agenda.entity.Contato;
@@ -12,6 +15,7 @@ import com.project_agenda.agenda.exception.RecursoNaoEncontradoException;
 import com.project_agenda.agenda.repository.ContatoRepository;
 import com.project_agenda.agenda.repository.EnderecoRepository;
 import com.project_agenda.agenda.service.IContatoService;
+import io.swagger.v3.core.util.Json;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,11 +77,28 @@ public class ContatoService implements IContatoService {
     @Override
     public Boolean excluirContato(UUID id) throws RecursoNaoEncontradoException {
 
-        if(!contatoRepository.existsById(id)){
+        Contato contatoExistente = contatoRepository.findById(id).orElseThrow(
+                () -> new RecursoNaoEncontradoException("O contato com ID " + id + " não foi encontrado ou não existe.")
+        );
+        try{
+            contatoRepository.delete(contatoExistente);
+            return true;
+        }
+        catch (RecursoNaoEncontradoException e){
             throw new RecursoNaoEncontradoException("O contato com ID " + id +" não foi encontrado ou não existe." );
         }
-        contatoRepository.deleteById(id);
-        return true;
+    }
+
+    @Override
+    @Transactional
+    public ContatoDTO substituirContato(UUID id, ContatoDTO contatoDTO) throws RecursoNaoEncontradoException{
+
+        try{
+            return substituiContato(id, contatoDTO);
+
+        }catch(RecursoNaoEncontradoException e){
+            throw new RecursoNaoEncontradoException("Contato não encontrado.");
+        }
     }
 
     @Override
@@ -85,9 +106,6 @@ public class ContatoService implements IContatoService {
     public ContatoDTO atualizarInfoContato(UUID id, ContatoDTO contatoDTO) throws Exception {
 
         try{
-            for(EnderecoDTO end : contatoDTO.getEnderecoLista()){
-                atualizarEnderecoDoContato(id, end.getId(), end);
-            }
             return atualizarContatoComDto(id, contatoDTO);
         }
         catch (RecursoNaoEncontradoException e){
@@ -120,16 +138,41 @@ public class ContatoService implements IContatoService {
         contatoRepository.save(contatoCriado);
     }
 
+    private ContatoDTO substituiContato(UUID id, ContatoDTO contatoDTO){
+        Contato contatoExistente = contatoRepository.findById(id).orElseThrow(
+                () -> new RecursoNaoEncontradoException("Contato não encontrado ou inexistente."));
+
+        List<Endereco> enderecosAtualizados = contatoDTO.getEnderecoLista().stream().map(
+                e -> Endereco.builder()
+                        .nomeRua(e.getNomeRua())
+                        .numeroRua(e.getNumeroRua())
+                        .cep(e.getCep())
+                        .contato(contatoExistente)
+                        .build()).toList();
+
+        contatoExistente.setNome(contatoDTO.getNome());
+        contatoExistente.setEmail(contatoDTO.getEmail());
+        contatoExistente.setTelefone(contatoDTO.getTelefone());
+        contatoExistente.setDataNascimento(contatoDTO.getDataNascimento());
+        contatoExistente.getEnderecoLista().clear();
+        contatoExistente.getEnderecoLista().addAll(enderecosAtualizados);
+
+
+        ContatoDTO contatoRepresentacao = new ContatoDTO();
+        BeanUtils.copyProperties(contatoExistente, contatoRepresentacao);
+        return contatoRepresentacao;
+    }
+
     private ContatoDTO atualizarContatoComDto(UUID id, ContatoDTO contatoDTO) throws IOException {
 
 
         Contato contatoExistente = contatoRepository.findById(id).orElseThrow(
                 () -> new RecursoNaoEncontradoException("O ID não foi encontrado ou não existe."));
 
-        // Instanciando o mapper
         ObjectMapper mapper = new ObjectMapper();
 
-        // Instanciando um dto para receber os dados que serão serializados
+        mapper.registerModule(new JavaTimeModule());
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         ContatoDTO contTeste = new ContatoDTO();
         BeanUtils.copyProperties(contatoDTO, contTeste, "enderecoLista");
 
@@ -137,6 +180,14 @@ public class ContatoService implements IContatoService {
         Contato contatoDesserializado = mapper.readerForUpdating(contatoExistente)
                 .readValue(jsonDTO, Contato.class);
 
+        JsonNode verificarCampoEnderecos = mapper.readTree(jsonDTO);
+        JsonNode campo = verificarCampoEnderecos.get("enderecoLista");
+
+        if(campo != null){
+            for(EnderecoDTO end : contatoDTO.getEnderecoLista()){
+                atualizarEnderecoDoContato(id, end.getId(), end);
+            }
+        }
         contatoRepository.save(contatoDesserializado);
 
         return ContatoDTO.builder().id(contatoExistente.getId())
@@ -156,20 +207,28 @@ public class ContatoService implements IContatoService {
         Contato contatoExistente = contatoRepository.findById(id).orElseThrow(
                 () -> new RecursoNaoEncontradoException("Contato não encontrado."));
 
+        boolean verificarIdEndereco = contatoExistente.getEnderecoLista()
+                .stream().anyMatch(e -> e.getId().equals(enderecoId));
 
-        Endereco enderecoExistente = contatoExistente.getEnderecoLista().stream()
-                .filter( e -> e.getId().equals(enderecoId))
-                .findFirst()
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Endereço não encontrado."));
+        if(verificarIdEndereco && verificarCamposEndereco(enderecoDTO)){
+            excluirEnderecoDoContato(id, enderecoId, enderecoDTO);
+        } else if (verificarIdEndereco && !verificarCamposEndereco(enderecoDTO)) {
+            Endereco enderecoExistente = contatoExistente.getEnderecoLista().stream()
+                    .filter( e -> e.getId().equals(enderecoId))
+                    .findFirst()
+                    .orElseThrow(() -> new RecursoNaoEncontradoException("Endereço não encontrado."));
 
 
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        String jsonDTO = mapper.writeValueAsString(enderecoDTO);
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+            String jsonDTO = mapper.writeValueAsString(enderecoDTO);
 
-        Endereco enderecoAtualizado = mapper.readerForUpdating(enderecoExistente)
-                .readValue(jsonDTO, Endereco.class);
-
+            Endereco enderecoAtualizado = mapper.readerForUpdating(enderecoExistente)
+                    .readValue(jsonDTO, Endereco.class);
+        }
+        else{
+            adicionarEndereco(id, enderecoDTO);
+        }
         contatoRepository.save(contatoExistente);
     }
 
@@ -197,6 +256,9 @@ public class ContatoService implements IContatoService {
                 enderecoCriado.setCep(enderecoDTO.getCep());
                 enderecoCriado.setContato(contatoExistente);
         }
+
+        contatoExistente.getEnderecoLista().add(enderecoCriado);
+        contatoRepository.save(contatoExistente);
     }
 
     private boolean verificarCamposEndereco(EnderecoDTO enderecoDTO){

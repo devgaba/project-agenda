@@ -5,6 +5,7 @@ import com.project_agenda.agenda.entity.Contato;
 import com.project_agenda.agenda.exception.EmailExistenteException;
 import com.project_agenda.agenda.repository.ContatoRepository;
 import com.project_agenda.agenda.service.IContatoService;
+import com.project_agenda.agenda.service.OnUpdate;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -12,9 +13,11 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
 import java.util.*;
 
 @RestController
@@ -73,20 +76,30 @@ public class ContatoController {
     }
     */
 
-
+    @Operation(description = "Substitui todos os dados de um contato")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Retorna o contato com os dados substituídos"),
+            @ApiResponse(responseCode = "404", description = "Retorna o erro específico ao tentar atualizar a " +
+                    "informação desejada.")
+    })
+    @PutMapping("/atualizar-contato/{id}")
+    public ResponseEntity<?> substituirContato(@PathVariable UUID id,
+                                               @Valid @RequestBody ContatoDTO contatoDTO) throws IOException {
+        ContatoDTO contatoSubstituido = contatoService.substituirContato(id, contatoDTO);
+        return new ResponseEntity<>(contatoSubstituido, HttpStatus.OK);
+    }
     @Operation(description = "Atualiza informações específicas de um contato")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Retorna o contato com as informações especificas atualizadas."),
             @ApiResponse(responseCode = "404", description = "Retorna o erro específico ao tentar atualizar a informação desejada.")
     })
     @PatchMapping("/atualizar-info-contato/{id}")
-    public ResponseEntity<?> atualizarInfoContato(@Valid @PathVariable UUID id,
-                                                         @RequestBody ContatoDTO contatoDTO) throws Exception {
+    public ResponseEntity<?> atualizarInfoContato(@PathVariable UUID id,
+                                                  @Validated(OnUpdate.class)
+                                                  @RequestBody ContatoDTO contatoDTO) throws Exception {
         ContatoDTO contatoSalvo = contatoService.atualizarInfoContato(id, contatoDTO);
         return new ResponseEntity<>(contatoSalvo, HttpStatus.OK);
     }
-
-
     @Operation(description = "Remove um contato do banco de dados, baseado no ID fornecido na URL.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "A exclusão foi executado com sucesso."),
